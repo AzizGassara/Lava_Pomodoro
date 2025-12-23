@@ -128,7 +128,7 @@ export const suggestBreakActivity = async (previousTask: string, apiKey?: string
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const model = 'gemini-2.0-flash-lite';
+    const model = 'gemini-2.5-flash';
     const response = await ai.models.generateContent({
       model,
       contents: `The user just finished a focus session working on: "${previousTask}". Suggest a quick, healthy, specific break activity (physical or mental) to recharge. 
