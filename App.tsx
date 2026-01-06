@@ -12,17 +12,28 @@ import { playSound } from './services/soundService';
 
 const App: React.FC = () => {
   // --- State ---
-  const [theme, setTheme] = useState(THEMES[0]);
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme ? JSON.parse(savedTheme) : THEMES[0];
+  });
   const [timerMode, setTimerMode] = useState<TimerMode>(TimerMode.FOCUS);
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const savedTasks = localStorage.getItem('tasks');
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [timerSettings, setTimerSettings] = useState<TimerSettings>({
-    focusDuration: 25,
-    shortBreakDuration: 5,
-    longBreakDuration: 15,
-    autoStartBreaks: false,
-    autoStartPomodoros: false
+  const [timerSettings, setTimerSettings] = useState<TimerSettings>(() => {
+    const savedSettings = localStorage.getItem('timerSettings');
+    return savedSettings
+      ? JSON.parse(savedSettings)
+      : {
+        focusDuration: 25,
+        shortBreakDuration: 5,
+        longBreakDuration: 15,
+        autoStartBreaks: false,
+        autoStartPomodoros: false
+      };
   });
 
   // AI Features State
@@ -38,6 +49,21 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('gemini_api_key', geminiApiKey);
   }, [geminiApiKey]);
+
+  // Persist Theme
+  useEffect(() => {
+    localStorage.setItem('theme', JSON.stringify(theme));
+  }, [theme]);
+
+  // Persist Timer Settings
+  useEffect(() => {
+    localStorage.setItem('timerSettings', JSON.stringify(timerSettings));
+  }, [timerSettings]);
+
+  // Persist Tasks
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
 
   // Fetch Quote on Mount or Theme Change
   useEffect(() => {
