@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Task } from '../types';
 import { generateSubtasks } from '../services/geminiService';
 import { playSound } from '../services/soundService';
-import { Plus, Trash2, Check, Sparkles, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, Check, Sparkles, Loader2, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
 
 interface TodoListProps {
   tasks: Task[];
@@ -16,6 +16,8 @@ const TodoList: React.FC<TodoListProps> = ({ tasks, setTasks, activeTaskId, setA
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [subtaskInputVisibleFor, setSubtaskInputVisibleFor] = useState<string | null>(null);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
+  const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
+  const [editingSubtaskTitle, setEditingSubtaskTitle] = useState('');
 
   const addSubtask = (parentId: string) => {
     if (!newSubtaskTitle.trim()) return;
@@ -32,6 +34,29 @@ const TodoList: React.FC<TodoListProps> = ({ tasks, setTasks, activeTaskId, setA
     ));
     setNewSubtaskTitle('');
     setSubtaskInputVisibleFor(null);
+  };
+
+  const editSubtask = (subtaskId: string, currentTitle: string) => {
+    setEditingSubtaskId(subtaskId);
+    setEditingSubtaskTitle(currentTitle);
+  };
+
+  const handleSubtaskUpdate = (parentId: string) => {
+    if (!editingSubtaskTitle.trim()) return;
+    setTasks(tasks.map(t =>
+      t.id === parentId
+        ? {
+            ...t,
+            subtasks: t.subtasks?.map(st =>
+              st.id === editingSubtaskId
+                ? { ...st, title: editingSubtaskTitle }
+                : st
+            ),
+          }
+        : t
+    ));
+    setEditingSubtaskId(null);
+    setEditingSubtaskTitle('');
   };
 
   const deleteSubtask = (parentId: string, subtaskId: string) => {
@@ -169,28 +194,67 @@ const TodoList: React.FC<TodoListProps> = ({ tasks, setTasks, activeTaskId, setA
               <div className="ml-9 mt-2 space-y-2 pl-2 border-l border-white/10">
                 {task.subtasks.map(st => (
                   <div key={st.id} className="group flex items-center justify-between gap-2 text-sm text-white/70 pr-2">
-                    <div className="flex items-center gap-2">
-                      <button
-                          onClick={() => {
-                            const updatedSubtasks = task.subtasks?.map(s => s.id === st.id ? { ...s, completed: !s.completed } : s);
-                            setTasks(tasks.map(t => t.id === task.id ? { ...t, subtasks: updatedSubtasks } : t));
-                            if (!st.completed) playSound('complete');
+                    {editingSubtaskId === st.id ? (
+                      <form onSubmit={(e) => { e.preventDefault(); handleSubtaskUpdate(task.id); }} className="flex gap-2 w-full items-center">
+                        <input
+                          type="text"
+                          value={editingSubtaskTitle}
+                          onChange={(e) => setEditingSubtaskTitle(e.target.value)}
+                          className="flex-1 bg-white/5 border-none outline-none text-white placeholder-white/30 focus:ring-0 rounded-md text-sm px-2 py-1"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                              setEditingSubtaskId(null);
+                              setEditingSubtaskTitle('');
+                            }
                           }}
-                          className={`w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
-                            st.completed ? 'bg-white/50 border-transparent' : 'border-white/20 hover:border-white/50'
-                          }`}
-                        >
-                          {st.completed && <Check size={10} className="text-black" />}
+                        />
+                        <button type="submit" className="p-1 bg-white/10 hover:bg-white/20 rounded-md text-white" aria-label="Update subtask">
+                          <Check size={16} />
                         </button>
-                        <span className={`truncate ${st.completed ? 'line-through opacity-50' : ''}`}>{st.title}</span>
-                    </div>
-                    <button
-                      onClick={() => deleteSubtask(task.id, st.id)}
-                      className="p-1 text-red-300 hover:text-red-100 transition-colors opacity-0 group-hover:opacity-100"
-                      title="Delete subtask"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                      </form>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 flex-1 truncate">
+                          <button
+                            onClick={() => {
+                              const updatedSubtasks = task.subtasks?.map(s => s.id === st.id ? { ...s, completed: !s.completed } : s);
+                              setTasks(tasks.map(t => t.id === task.id ? { ...t, subtasks: updatedSubtasks } : t));
+                              if (!st.completed) playSound('complete');
+                            }}
+                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
+                              st.completed ? 'bg-white/50 border-transparent' : 'border-white/20 hover:border-white/50'
+                            }`}
+                          >
+                            {st.completed && <Check size={10} className="text-black" />}
+                          </button>
+                          <span
+                            onDoubleClick={() => editSubtask(st.id, st.title)}
+                            className={`truncate cursor-pointer ${st.completed ? 'line-through opacity-50' : ''}`}
+                          >
+                            {st.title}
+                          </span>
+                        </div>
+                        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => editSubtask(st.id, st.title)}
+                            className="p-1 text-blue-300 hover:text-blue-100 transition-colors"
+                            title="Edit subtask"
+                            aria-label={`Edit subtask ${st.title}`}
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            onClick={() => deleteSubtask(task.id, st.id)}
+                            className="p-1 text-red-300 hover:text-red-100 transition-colors"
+                            title="Delete subtask"
+                            aria-label={`Delete subtask ${st.title}`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
