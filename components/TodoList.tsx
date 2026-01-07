@@ -14,6 +14,25 @@ interface TodoListProps {
 const TodoList: React.FC<TodoListProps> = ({ tasks, setTasks, activeTaskId, setActiveTaskId }) => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
+  const [subtaskInputVisibleFor, setSubtaskInputVisibleFor] = useState<string | null>(null);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
+
+  const addSubtask = (parentId: string) => {
+    if (!newSubtaskTitle.trim()) return;
+    playSound('add');
+    const newSubtask: Task = {
+      id: crypto.randomUUID(),
+      title: newSubtaskTitle,
+      completed: false,
+    };
+    setTasks(tasks.map(t =>
+      t.id === parentId
+        ? { ...t, subtasks: [...(t.subtasks || []), newSubtask] }
+        : t
+    ));
+    setNewSubtaskTitle('');
+    setSubtaskInputVisibleFor(null);
+  };
 
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,6 +140,13 @@ const TodoList: React.FC<TodoListProps> = ({ tasks, setTasks, activeTaskId, setA
                   {isGenerating === task.id ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                 </button>
                 <button
+                  onClick={() => setSubtaskInputVisibleFor(subtaskInputVisibleFor === task.id ? null : task.id)}
+                  className="p-2 text-blue-300 hover:text-blue-100 transition-colors"
+                  title="Add subtask"
+                >
+                  <Plus size={16} />
+                </button>
+                <button
                   onClick={() => deleteTask(task.id)}
                   className="p-2 text-red-300 hover:text-red-100 transition-colors"
                 >
@@ -134,7 +160,7 @@ const TodoList: React.FC<TodoListProps> = ({ tasks, setTasks, activeTaskId, setA
               <div className="ml-9 mt-2 space-y-2 pl-2 border-l border-white/10">
                 {task.subtasks.map(st => (
                   <div key={st.id} className="flex items-center gap-2 text-sm text-white/70">
-                     <button 
+                     <button
                         onClick={() => {
                           const updatedSubtasks = task.subtasks?.map(s => s.id === st.id ? { ...s, completed: !s.completed } : s);
                           setTasks(tasks.map(t => t.id === task.id ? { ...t, subtasks: updatedSubtasks } : t));
@@ -149,6 +175,23 @@ const TodoList: React.FC<TodoListProps> = ({ tasks, setTasks, activeTaskId, setA
                       <span className={st.completed ? 'line-through opacity-50' : ''}>{st.title}</span>
                   </div>
                 ))}
+              </div>
+            )}
+            {subtaskInputVisibleFor === task.id && (
+              <div className="ml-9 mt-2 pl-2">
+                <form onSubmit={(e) => { e.preventDefault(); addSubtask(task.id); }} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSubtaskTitle}
+                    onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                    placeholder="Add subtask..."
+                    className="flex-1 bg-white/5 border-none outline-none text-white placeholder-white/30 focus:ring-0 rounded-md text-sm px-2 py-1"
+                    autoFocus
+                  />
+                  <button type="submit" className="p-1 bg-white/10 hover:bg-white/20 rounded-md text-white" aria-label="Add subtask">
+                    <Plus size={16} />
+                  </button>
+                </form>
               </div>
             )}
           </div>
@@ -167,6 +210,7 @@ const TodoList: React.FC<TodoListProps> = ({ tasks, setTasks, activeTaskId, setA
           type="submit" 
           disabled={!newTaskTitle.trim()}
           className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white disabled:opacity-30 transition-colors"
+          aria-label="Add task"
         >
           <Plus size={20} />
         </button>
