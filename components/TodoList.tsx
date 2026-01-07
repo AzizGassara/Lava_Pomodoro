@@ -34,6 +34,15 @@ const TodoList: React.FC<TodoListProps> = ({ tasks, setTasks, activeTaskId, setA
     setSubtaskInputVisibleFor(null);
   };
 
+  const deleteSubtask = (parentId: string, subtaskId: string) => {
+    playSound('delete');
+    setTasks(tasks.map(t =>
+      t.id === parentId
+        ? { ...t, subtasks: t.subtasks?.filter(st => st.id !== subtaskId) }
+        : t
+    ));
+  };
+
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTaskTitle.trim()) return;
@@ -159,20 +168,29 @@ const TodoList: React.FC<TodoListProps> = ({ tasks, setTasks, activeTaskId, setA
             {task.subtasks && task.subtasks.length > 0 && (
               <div className="ml-9 mt-2 space-y-2 pl-2 border-l border-white/10">
                 {task.subtasks.map(st => (
-                  <div key={st.id} className="flex items-center gap-2 text-sm text-white/70">
-                     <button
-                        onClick={() => {
-                          const updatedSubtasks = task.subtasks?.map(s => s.id === st.id ? { ...s, completed: !s.completed } : s);
-                          setTasks(tasks.map(t => t.id === task.id ? { ...t, subtasks: updatedSubtasks } : t));
-                          if (!st.completed) playSound('complete');
-                        }}
-                        className={`w-4 h-4 rounded border flex items-center justify-center ${
-                          st.completed ? 'bg-white/50 border-transparent' : 'border-white/20'
-                        }`}
-                      >
-                        {st.completed && <Check size={10} className="text-black" />}
-                      </button>
-                      <span className={st.completed ? 'line-through opacity-50' : ''}>{st.title}</span>
+                  <div key={st.id} className="group flex items-center justify-between gap-2 text-sm text-white/70 pr-2">
+                    <div className="flex items-center gap-2">
+                      <button
+                          onClick={() => {
+                            const updatedSubtasks = task.subtasks?.map(s => s.id === st.id ? { ...s, completed: !s.completed } : s);
+                            setTasks(tasks.map(t => t.id === task.id ? { ...t, subtasks: updatedSubtasks } : t));
+                            if (!st.completed) playSound('complete');
+                          }}
+                          className={`w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
+                            st.completed ? 'bg-white/50 border-transparent' : 'border-white/20 hover:border-white/50'
+                          }`}
+                        >
+                          {st.completed && <Check size={10} className="text-black" />}
+                        </button>
+                        <span className={`truncate ${st.completed ? 'line-through opacity-50' : ''}`}>{st.title}</span>
+                    </div>
+                    <button
+                      onClick={() => deleteSubtask(task.id, st.id)}
+                      className="p-1 text-red-300 hover:text-red-100 transition-colors opacity-0 group-hover:opacity-100"
+                      title="Delete subtask"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 ))}
               </div>
