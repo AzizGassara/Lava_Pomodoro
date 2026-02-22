@@ -7,17 +7,43 @@ interface LavaBackgroundProps {
 
 const LavaBackground: React.FC<LavaBackgroundProps> = ({ theme }) => {
   const [blobs, setBlobs] = useState<Array<{ id: number; left: number; top: number; size: number; duration: number; delay: number; color: string; anim: string }>>([]);
+  const [screenSize, setScreenSize] = useState<'sm' | 'md' | 'lg' | 'xl'>('lg');
 
   useEffect(() => {
-    // Generate organic blobs
-    const count = 10;
+    // Detect screen size
+    const updateScreenSize = () => {
+      const width = window.innerWidth;
+      if (width < 640) setScreenSize('sm');
+      else if (width < 1024) setScreenSize('md');
+      else if (width < 1920) setScreenSize('lg');
+      else setScreenSize('xl');
+    };
+
+    updateScreenSize();
+    window.addEventListener('resize', updateScreenSize);
+    return () => window.removeEventListener('resize', updateScreenSize);
+  }, []);
+
+  useEffect(() => {
+    // Generate organic blobs - size scales with screen
+    const sizeMultipliers = {
+      sm: 0.5,   // 375px screens - 50% size
+      md: 0.7,   // 768px screens - 70% size
+      lg: 1.0,   // 1080p-1440p - 100% size
+      xl: 1.2    // 2K+ - 120% size for extra impact
+    };
+
+    const multiplier = sizeMultipliers[screenSize];
+    const count = screenSize === 'sm' ? 6 : 10; // Fewer blobs on small screens
+
     const newBlobs = Array.from({ length: count }).map((_, i) => {
-      const isLarge = i < 3; 
+      const isLarge = i < 3;
+      const baseSize = isLarge ? 300 + Math.random() * 150 : 180 + Math.random() * 100;
       return {
         id: i,
-        left: Math.random() * 90 + 5, // Keep somewhat within bounds
+        left: Math.random() * 90 + 5,
         top: Math.random() * 90 + 5,
-        size: isLarge ? 300 + Math.random() * 150 : 180 + Math.random() * 100,
+        size: baseSize * multiplier,
         duration: (isLarge ? 25 : 18) + Math.random() * 10,
         delay: Math.random() * -30,
         color: theme.colors[i % theme.colors.length],
@@ -25,7 +51,7 @@ const LavaBackground: React.FC<LavaBackgroundProps> = ({ theme }) => {
       };
     });
     setBlobs(newBlobs);
-  }, [theme]);
+  }, [theme, screenSize]);
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#050505]">
@@ -71,7 +97,6 @@ const LavaBackground: React.FC<LavaBackgroundProps> = ({ theme }) => {
         .lava-blob {
            position: absolute;
            border-radius: 50%;
-           /* Opacity 1 is crucial for the alpha threshold filter to produce a solid blob */
            opacity: 1;
            will-change: transform;
         }
@@ -91,14 +116,16 @@ const LavaBackground: React.FC<LavaBackgroundProps> = ({ theme }) => {
       `}</style>
       
       {/* 
-        The Gooey Filter 
-        This uses a Gaussian Blur to blend the shapes, then a Color Matrix to sharpen the alpha channel.
-        This creates the effect of them merging like liquid wax.
+        The Gooey Filter - blur scales with screen size
       */}
       <svg className="hidden">
         <defs>
           <filter id="goo">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="35" result="blur" />
+            <feGaussianBlur 
+              in="SourceGraphic" 
+              stdDeviation={screenSize === 'sm' ? 20 : screenSize === 'md' ? 28 : 35} 
+              result="blur" 
+            />
             <feColorMatrix
               in="blur"
               mode="matrix"
@@ -108,7 +135,6 @@ const LavaBackground: React.FC<LavaBackgroundProps> = ({ theme }) => {
                       0 0 0 50 -10"
               result="goo"
             />
-            {/* Note: Removing feComposite prevents the original sharp shapes from rendering on top */}
           </filter>
         </defs>
       </svg>
@@ -130,7 +156,7 @@ const LavaBackground: React.FC<LavaBackgroundProps> = ({ theme }) => {
               marginLeft: `-${blob.size / 2}px`,
               marginTop: `-${blob.size / 2}px`,
               backgroundColor: blob.color,
-              animation: `${blob.anim} ${blob.duration / theme.speed}s infinite ease-in-out alternate`,
+              animation: `${blob.anim} ${blob.duration / (theme.speed || 1)}s infinite ease-in-out alternate`,
               animationDelay: `${blob.delay}s`,
             }}
           />
