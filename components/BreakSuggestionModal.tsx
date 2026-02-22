@@ -1,6 +1,11 @@
 import React from 'react';
 import { BreakSuggestion } from '../types';
-import { Coffee, Wind, Eye, Activity, Smile, Music, X } from 'lucide-react';
+import { 
+  Coffee, Wind, Eye, Activity, Smile, Music, X, 
+  PenTool, BookOpen, Brain, Ear, Layout, Calendar, 
+  Camera, Droplets, Battery, Sparkles, Sun, Lightbulb, 
+  Heart, MessageSquare, Palette, Globe, List, Zap
+} from 'lucide-react';
 
 interface BreakSuggestionModalProps {
   isOpen: boolean;
@@ -15,7 +20,25 @@ const iconMap: Record<string, React.ReactNode> = {
   Eye: <Eye size={48} />,
   Activity: <Activity size={48} />,
   Smile: <Smile size={48} />,
-  Music: <Music size={48} />
+  Music: <Music size={48} />,
+  PenTool: <PenTool size={48} />,
+  BookOpen: <BookOpen size={48} />,
+  Brain: <Brain size={48} />,
+  Ear: <Ear size={48} />,
+  Layout: <Layout size={48} />,
+  Calendar: <Calendar size={48} />,
+  Camera: <Camera size={48} />,
+  Droplets: <Droplets size={48} />,
+  Battery: <Battery size={48} />,
+  Sparkles: <Sparkles size={48} />,
+  Sun: <Sun size={48} />,
+  Lightbulb: <Lightbulb size={48} />,
+  Heart: <Heart size={48} />,
+  MessageSquare: <MessageSquare size={48} />,
+  Palette: <Palette size={48} />,
+  Globe: <Globe size={48} />,
+  List: <List size={48} />,
+  Zap: <Zap size={48} />
 };
 
 const BreakSuggestionModal: React.FC<BreakSuggestionModalProps> = ({ isOpen, onClose, suggestion, loading }) => {
