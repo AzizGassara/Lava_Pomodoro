@@ -21,15 +21,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl relative">
+      {/* Modal container - constrained height with flex layout */}
+      <div className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] shadow-2xl relative flex flex-col">
+        {/* Close button - fixed position, always visible */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+          className="absolute top-4 right-4 z-10 text-white/50 hover:text-white transition-colors p-2 touch-target"
+          aria-label="Close settings"
         >
           <X size={24} />
         </button>
 
-        <div className="p-6">
+        {/* Scrollable content area */}
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-2">
             Settings
           </h2>
@@ -39,18 +43,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             <h3 className="text-sm uppercase tracking-wider text-white/50 mb-4 flex items-center gap-2">
               <Palette size={16} /> Theme
             </h3>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {THEMES.map(theme => (
                 <button
                   key={theme.id}
                   onClick={() => setTheme(theme)}
-                  className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition-all ${currentTheme.id === theme.id
+                  className={`p-3 rounded-xl border flex flex-col items-center gap-2 transition-all min-h-[80px] ${currentTheme.id === theme.id
                       ? 'bg-white/10 border-white/60'
                       : 'bg-white/5 border-transparent hover:bg-white/10'
                     }`}
                 >
                   <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: `linear-gradient(135deg, ${theme.colors[0]}, ${theme.colors[1]})` }} />
-                  <span className="text-xs text-white/80">{theme.name}</span>
+                  <span className="text-xs text-white/80 text-center">{theme.name}</span>
                 </button>
               ))}
             </div>
@@ -91,7 +95,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </div>
 
-            <div className="mt-4 flex gap-4">
+            <div className="mt-4 flex flex-col sm:flex-row gap-4">
               <label className="flex items-center gap-2 cursor-pointer text-sm text-white/70 hover:text-white">
                 <input
                   type="checkbox"
