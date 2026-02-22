@@ -1,50 +1,71 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Lava Pomodoro
 
-# Run and deploy your AI Studio app
+A visually distinctive Pomodoro timer with a flowing lava‑lamp background. Built with vanilla HTML, CSS, and JavaScript – no frameworks, no dependencies.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1TfBUgElY0Y1dAuCUFgfwubAxGO_ejEww
+- **Pomodoro timer** – work/break cycles (default 25/5 minutes, fully customisable)
+- **Lava‑lamp background** – a subtle, animated gradient that shifts colour and rotates, creating a relaxing visual effect
+- **Audio notifications** – optional sound when a session ends
+- **Responsive design** – works on desktop and mobile browsers
+- **No build step** – just open `index.html` and start using
 
-## Run Locally
+## How It Works
 
-**Prerequisites:**  Node.js
+### Timer Logic (`js/script.js`)
+- The timer runs in the browser using `setInterval`.  
+- Work/break durations are stored in `localStorage` so preferences persist across sessions.  
+- When a session ends, the timer automatically switches to the opposite mode (work → break → work) and loops until paused.  
+- The UI updates every second, and a click on "Start" begins the countdown.
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### Lava Effect (`css/style.css`)
+The background is a CSS gradient animated via `@keyframes`:
 
-2. **Run the app:**
-   ```bash
-   npm run dev
-   ```
+```css
+body {
+  background: linear-gradient(45deg, #ff4e50, #f9d423, #ff4e50);
+  background-size: 400% 400%;
+  animation: lava 15s ease infinite;
+}
 
-3. **Configure API Key:**
-   - Open the app in your browser.
-   - Click the **Settings** (gear icon) in the top right.
-   - Enter your **Gemini API Key** in the "AI Configuration" section.
-   - *Note: If you don't have a key, the app still works with offline fallback templates!*
+@keyframes lava {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+```
 
-## How to Deploy (Fast & Free)
+The gradient moves horizontally, while the `background-size` creates a smooth, wave‑like transition – mimicking the flow of lava.
 
-The easiest way to host this project is using **Vercel** or **Netlify**.
+### Customisation
+- **Work/break times** – click the gear icon and set your preferred minutes.  
+- **Sound** – enabled by default; can be toggled off in settings.  
+- **Colours** – modify the gradient stops in `style.css` to change the lava palette.
 
-### Option 1: Vercel (Recommended)
-1. Push this project to a GitHub repository.
-2. Go to [Vercel.com](https://vercel.com) and sign up/login.
-3. Click **"Add New Project"** and select your GitHub repo.
-4. Keep the default settings (Framework: Vite).
-5. Click **Deploy**.
-6. Done! Your app is live.
+## Project Structure
 
-### Option 2: Netlify
-1. Push this project to GitHub.
-2. Go to [Netlify.com](https://netlify.com).
-3. Click **"New site from Git"**.
-4. Choose your repo.
-5. Click **"Deploy site"**.
+```
+Lava_Pomodoro/
+├── index.html          # Main UI
+├── css/
+│   └── style.css       # Styling + lava animation
+├── js/
+│   └── script.js       # Timer logic, settings, sound
+├── .gitignore
+└── LICENSE
+```
 
-Since the API Key is stored in your browser's LocalStorage, you don't need to configure environment variables on the server. Every user brings their own key!
+## Getting Started
+
+1. Clone the repository:  
+   `git clone https://github.com/AzizGassara/Lava_Pomodoro.git`
+2. Open `index.html` in any modern browser.
+3. Click "Start" and focus on your work while the lava flows.
+
+## Contributing
+
+Feel free to open issues or submit PRs for improvements – extra themes, keyboard shortcuts, or better accessibility.
+
+## License
+
+MIT – do whatever you like with it.
